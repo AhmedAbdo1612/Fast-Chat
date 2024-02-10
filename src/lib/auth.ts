@@ -59,9 +59,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Failed to log in ");
         }
         const user = { ...credentials };
-       
+
         const dbUser = (await db.get(`user:${user.id}`)) as User | null;
-        console.log(dbUser)
         if (dbUser) {
           return {
             id: dbUser.id,
@@ -69,43 +68,45 @@ export const authOptions: NextAuthOptions = {
             email: dbUser.email,
             image: dbUser.image,
           };
-        }
-        else{
-          const _ = await db.set(user.id, {email:user.email, name:user.name,id:user.id, image:user.image})
-          console.log(_)
+        } else {
+          await db.set(user.id, {
+            email: user.email,
+            name: user.name,
+            id: user.id,
+            image: user.image,
+          });
+          await db.set(`user:email:${user.email}`, user.id)
         }
         return user;
       },
     }),
   ],
-  // callbacks:{
-  //   async jwt({token,user,session}){
-  //     session.id = token.id
-  //     console.log(session)
-  //       const dbUser = (await db.get(`user:${token.id}`)) as User |null
-  //   if(!dbUser){
-  //        token.id = user.id
-  //        return token
-  //   }
-  //   console.log("DB user exisits\n", dbUser)
-  //   return {
-  //       id:dbUser.id,
-  //       name:dbUser.name,
-  //       email:dbUser.email,
-  //       image:dbUser.image
+  callbacks:{
+    // async jwt({token,user,session}){
+    //   session.id = token.id
+    //   console.log(session)
+    //     const dbUser = (await db.get(`user:${token.id}`)) as User |null
+    // if(!dbUser){
+    //      token.id = user.id
+    //      return token
+    // }
+    // console.log("DB user exisits\n", dbUser)
+    // return {
+    //     id:dbUser.id,
+    //     name:dbUser.name,
+    //     email:dbUser.email,
+    //     image:dbUser.image
 
-  //   }
-  //   },
-  //   async session({session,token,user}){
+    // }
+    // },
+    async session({session,token,user}){
+            session.user.id = token.sub|| user.id
+            // session.user.name = token.name
+            // session.user.email = token.email
+            // session.user.image = token.picture
 
-  //           session.user.id = token.sub|| user.id
-  //           session.user.name = token.name
-  //           session.user.email = token.email
-  //           session.user.image = token.picture
+        return session
+    },
 
-  //       console.log(session)
-  //       return session
-  //   },
-
-  // },
+  },
 };
