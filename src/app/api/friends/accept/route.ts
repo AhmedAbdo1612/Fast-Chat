@@ -1,6 +1,8 @@
 import { fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/util";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
@@ -25,20 +27,21 @@ export async function POST(req: Request) {
       `user:${session.user.id}:incoming_friend_requests`,
       idtoAdd
     );
-    if(!hasFriendRequest){
-        return new Response("No friend request", {status:400})
+    if (!hasFriendRequest) {
+      return new Response("No friend request", { status: 400 });
     }
-    await db.sadd(`user:${session.user.id}:friends`,idtoAdd)
-    db.sadd(`user:${idtoAdd}:friends`,session.user.id)
+
+    pusherServer.trigger(toPusherKey(`user:${idtoAdd}:friends`), "new_friend","")
+
+    await db.sadd(`user:${session.user.id}:friends`, idtoAdd);
+    await db.sadd(`user:${idtoAdd}:friends`, session.user.id);
     // await db.srem(`user:${idtoAdd}:incoming_friend_requests`, session.user.id)
-    await db.srem(`user:${session.user.id}:incoming_friend_requests`, idtoAdd)
-    return new Response("ok")
-
+    await db.srem(`user:${session.user.id}:incoming_friend_requests`, idtoAdd);
+    return new Response("ok");
   } catch (error) {
-
-if(error instanceof z.ZodError){
-    return new Response("Invalid request paylod", {status:422})
-}
-return new Response("invalid request", {status:400})
-}
+    if (error instanceof z.ZodError) {
+      return new Response("Invalid request paylod", { status: 422 });
+    }
+    return new Response("invalid request", { status: 400 });
+  }
 }

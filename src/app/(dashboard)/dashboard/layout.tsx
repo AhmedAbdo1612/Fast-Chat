@@ -1,5 +1,6 @@
 import FriendRequestSidebarOption from "@/components/FriendRequestSidebarOption";
 import { Icon, Icons } from "@/components/Icons";
+import MobileChatLayout from "@/components/MobileChatLayout";
 import SidebarChatList from "@/components/SidebarChatList";
 import SignOutButton from "@/components/SignOutButton";
 import { getFriendsByUserId } from "@/helpers/get-friends-by-user-id";
@@ -15,43 +16,30 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-interface SidebarOption {
-  id: number;
-  name: string;
-  href: string;
-  Icon: Icon;
-}
-const sidebarOptions: SidebarOption[] = [
-  {
-    id: 1,
-    name: "Ahmed Abdo",
-    href: "/dashboard/add",
-    Icon: "UserPlus",
-  },
-  {
-    id: 2,
-    name: "Samir Saieed",
-    href: "/dashboard/add",
-    Icon: "UserPlus",
-  },
-];
-
 const Layout: FC<LayoutProps> = async ({ children }) => {
   const session = await getServerSession(authOptions);
   if (!session) {
     notFound();
   }
-
-  const friends = await getFriendsByUserId(session.user.id);
-  const unSeenRequestCount = (
-    (await fetchRedis(
-      "smembers",
-      `user:${session.user.id}:incoming_friend_requests`
-    )) as User[]
-  ).length;
+  let friends;
+  let unSeenRequestCount;
+  try {
+    friends = await getFriendsByUserId(session.user.id);
+    unSeenRequestCount = (
+      (await fetchRedis(
+        "smembers",
+        `user:${session.user.id}:incoming_friend_requests`
+      )) as User[]
+    ).length;
+  } catch (error) {
+    return notFound();
+  }
 
   return (
     <div className="w-full flex h-screen">
+      <div className="md:hidden">
+        <MobileChatLayout />
+      </div>
       <div className="flex h-full max-w-xs grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
         <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
           <Icons.Logo className="h-8 w-auto text-indigo-600" />
@@ -64,38 +52,19 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
-              <SidebarChatList sessionId = {session.user.id} friends={friends} />
+              <SidebarChatList sessionId={session.user.id} friends={friends} />
             </li>
             <li>
               <div className="text-xs font-semibold leading-6 text-gray-400">
                 Overview
               </div>
               <ul role="list" className="-mx-2 mt-2 space-y-1">
-                {/* {sidebarOptions.map((option) => {
-                  const Icon = Icons[option.Icon];
-                  return (
-                    <li key={option.id}>
-                      <Link
-                        href={option.href}
-                        className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                      >
-                        <span
-                          className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center
-                                 justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
-                        >
-                          <Icon className="h-4 w-4" />
-                        </span>
-                        <span className="truncate">{option.name}</span>
-                      </Link>
-                    </li>
-                  );
-                })} */}
                 <Link
                   href={"/dashboard/add"}
                   className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold "
                 >
                   <div className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
-                    <User className="h-4 w-4" />
+                    <Icons.UserPlus className="h-4 w-4" />
                   </div>
                   <p className="truncate">Add friend</p>
                 </Link>
@@ -120,9 +89,12 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
                   />
                 </div>
                 <span className="sr-only">Your profile</span>
-                <div className="flex flex-col max-w-[100px] ">
+                <div className="flex flex-col">
                   <span aria-hidden="true">{session.user.name}</span>
-                  <span className="text-xs  truncate text-zinc-400" aria-hidden="true">
+                  <span
+                    className="text-xs   truncate text-zinc-400"
+                    aria-hidden="true"
+                  >
                     {session.user.email}
                   </span>
                 </div>
@@ -132,7 +104,9 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
           </ul>
         </nav>
       </div>
-      {children}
+      <aside className="max-h-screen container py-16 md:py-12 w-full ">
+        {children}
+      </aside>
     </div>
   );
 };

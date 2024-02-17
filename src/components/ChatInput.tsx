@@ -16,6 +16,8 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner,chatId }) => {
   const [input, setInput] = useState<string>("");
   const [loading,setLoading] = useState<boolean>(false)
   const sendMessage =async () => {
+    const isWhitespaceString = (str:string) => !/\S/.test(str)
+    if(!input || isWhitespaceString(input)) return
     setLoading(true)
     try {
         await axios.post('/api/friends/message/send',{

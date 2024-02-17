@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Message, messageValidator } from "@/lib/validations/message";
 import { getServerSession } from "next-auth";
-import {nanoid} from 'nanoid'
+import { nanoid } from "nanoid";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/util";
 
@@ -22,29 +22,38 @@ export async function POST(req: Request) {
       `user:${session.user.id}:friends`
     )) as string[];
     const isFriend = friendList.includes(friendId);
-    if(!isFriend){
-        return new Response("Unauthorized", { status: 401 });
+    if (!isFriend) {
+      return new Response("Unauthorized", { status: 401 });
     }
-    const rawsender = await fetchRedis('get',session.user.id) as string 
-    const sender = JSON.parse(rawsender) as User
-    const timestamp = Date.now()
-    const messageData:Message = {
-          id:nanoid(),
-          senderId:session.user.id ,
-          text,
-          timestamp
-    }
-    const message = messageValidator.parse(messageData)
-pusherServer.trigger(toPusherKey(`chat:${chatId}`), 'incoming-message',message )
+    const rawsender = (await fetchRedis("get", session.user.id)) as string;
+    const sender = JSON.parse(rawsender) as User;
+    const timestamp = Date.now();
+    const messageData: Message = {
+      id: nanoid(),
+      senderId: session.user.id,
+      text,
+      timestamp,
+    };
+    const message = messageValidator.parse(messageData);
+    pusherServer.trigger(toPusherKey(`chat:${chatId}`),
+      "incoming-message",
+      message
+    );
+
+    pusherServer.trigger(toPusherKey(`user:${friendId}:chats`), "new_message", {
+      ...message,
+      senderImg: sender.image,
+      senderName: sender.name,
+    });
     await db.zadd(`chat:${chatId}:messages`, {
-        score:timestamp,
-        member:JSON.stringify(message)
-    })
-    return new Response("Ok")
+      score: timestamp,
+      member: JSON.stringify(message),
+    });
+    return new Response("Ok");
   } catch (error) {
-    if(error instanceof Error){
-        return new Response(error.message,{status:500})
+    if (error instanceof Error) {
+      return new Response(error.message, { status: 500 });
     }
-    return new Response("Internal Server Error", {status:500})
+    return new Response("Internal Server Error", { status: 500 });
   }
 }

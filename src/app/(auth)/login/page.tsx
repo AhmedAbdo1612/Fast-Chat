@@ -7,37 +7,36 @@ import { useRouter } from "next/navigation";
 import { FC, useState } from "react";
 import toast from "react-hot-toast";
 
-interface LoginPageProps {}
-
-const LoginPage: FC<LoginPageProps> = ({}) => {
+const LoginPage: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const router = useRouter()
+  const router = useRouter();
   async function logingWithGoogle() {
     setIsLoading(true);
     try {
-      const provider = new GoogleAuthProvider()
-      const auth = getAuth(app)
-      const {user} = await signInWithPopup(auth, provider)
+      const provider = new GoogleAuthProvider();
+      const auth = getAuth(app);
+      const { user } = await signInWithPopup(auth, provider);
       const credentials = {
-        name:user.displayName, 
-        image:user.photoURL, 
-        email:user.email,
-        id:user.uid
-      }
-      console.log(credentials)
-       signIn("credentials", {...credentials, redirect:false}).then((callback)=>{
-        console.log("done")
-        if(callback?.ok){
-          router.push('/dashboard')
-          router.refresh()
-          toast.success("Logged in successfully")
-        }
-        else if(callback?.error){
-          toast.error("Someting went wrong")
-        }
-       }).catch((err)=>{
-        console.log(err)
-       })
+        name: user.displayName,
+        image: user.photoURL,
+        email: user.email,
+        id: user.uid,
+      };
+      console.log(credentials);
+      signIn("credentials", { ...credentials, redirect: false })
+        .then((callback) => {
+          console.log("done");
+          if (callback?.ok) {
+            router.push("/dashboard");
+            router.refresh();
+            toast.success("Logged in successfully");
+          } else if (callback?.error) {
+            toast.error("Someting went wrong");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     } catch (error) {
       toast.error("Something went wrong with your login");
       console.log(error);
