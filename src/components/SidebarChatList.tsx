@@ -22,13 +22,14 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [unSeenMessages, setUnseenMessages] = useState<Message[]>([]);
-
+  const [activeChats, setActiveChats] = useState<User[]>(friends)
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
 
     pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
-    const newFriendHandler = () => {
-      router.refresh();
+    const newFriendHandler = (newFriend:User) => {
+      console.log("newFriend",newFriend)
+      setActiveChats((prev)=>[...prev,newFriend])
     };
     const chatHandler = (message: ExtendedMessage) => {
       const shouldNotify =
@@ -46,7 +47,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
           senderName={message.senderName}
         />
       ));
-      setUnseenMessages((prev)=>[...prev, message])
+      setUnseenMessages((prev) => [...prev, message]);
     };
     pusherClient.bind("new_message", chatHandler);
     pusherClient.bind("new_friend", newFriendHandler);
@@ -54,12 +55,11 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:chats`));
 
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
-      
+
       pusherClient.unbind("new_message", chatHandler);
       pusherClient.unbind("new_friend", newFriendHandler);
     };
-  }, [pathname, sessionId,router]);
-  
+  }, [pathname, sessionId, router]);
 
   useEffect(() => {
     if (pathname?.includes("chat")) {
@@ -71,7 +71,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
 
   return (
     <ul role="list" className="max-h-[25rem] overflow-y-auto -mx-2 space-y-1">
-      {friends.sort().map((friend) => {
+      {activeChats.sort().map((friend) => {
         const unseenMessagesCount = unSeenMessages.filter((msg) => {
           return msg.senderId === friend.id;
         }).length;

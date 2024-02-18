@@ -22,10 +22,8 @@ const LoginPage: FC = () => {
         email: user.email,
         id: user.uid,
       };
-      console.log(credentials);
       signIn("credentials", { ...credentials, redirect: false })
         .then((callback) => {
-          console.log("done");
           if (callback?.ok) {
             router.push("/dashboard");
             router.refresh();

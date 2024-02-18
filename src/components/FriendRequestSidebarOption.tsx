@@ -17,21 +17,34 @@ const FriendRequestSidebarOption: FC<FriendRequestSidebarOptionProps> = ({
   const [unseenRequestCount, setUnseenRequestCount] = useState<number>(
     initialUnseenRequestCount
   );
-  useEffect(()=>{
+  useEffect(() => {
     pusherClient.subscribe(
       toPusherKey(`user:${sessionId}:incoming_friend_requests`)
     );
+
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
+
     const friendRequestHandler = () => {
-      setUnseenRequestCount((prev)=>prev+1)
+      setUnseenRequestCount((prev) => prev + 1);
     };
+
+    const addedFriendHandler = () => {
+      setUnseenRequestCount(unseenRequestCount - 1);
+    };
+
+    pusherClient.bind("new_friend", addedFriendHandler);
+
     pusherClient.bind("incoming_friend_requests", friendRequestHandler);
     return () => {
       pusherClient.unsubscribe(
         toPusherKey(`user:${sessionId}:incoming_friend_requests`)
       );
       pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+      pusherClient.unbind("new_friend", addedFriendHandler);
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
+
     };
-  },[sessionId])
+  }, [sessionId, unseenRequestCount]);
   return (
     <Link
       href={"/dashboard/requests"}
