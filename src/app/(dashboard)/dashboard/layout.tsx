@@ -90,7 +90,7 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
               </ul>
             </li>
 
-            <li className="overflow-clip -mx-6 mt-auto w-full flex items-center relative">
+            <li className=" -mx-6 mt-auto w-full flex items-center relative">
               <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
                 <div className="relative h-8 w-8 bg-gray-50">
                   <Image
@@ -108,7 +108,7 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
                     <SignOutButton className="h-full aspect-square " />
                   </div>
                   <span
-                    className="text-xs max-w-xs  shrink truncate text-zinc-400 pr-3"
+                    className="max-w-[8rem] text-xs  shrink truncate text-zinc-400 pr-3"
                     aria-hidden="true"
                   >
                     {session.user.email}
