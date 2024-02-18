@@ -27,19 +27,15 @@ const Messages: FC<MessagesProps> = ({
     return format(timestamp, "HH:mm");
   };
   useEffect(() => {
-    pusherClient.subscribe(
-      toPusherKey(`chat:${chatId}`)
-    );
+    pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
 
-    const messageHandler = (message:Message) => {
+    const messageHandler = (message: Message) => {
       setMessages((prev) => [message, ...prev]);
     };
- 
+
     pusherClient.bind("incoming-message", messageHandler);
     return () => {
-      pusherClient.unsubscribe(
-        toPusherKey(`chat:${chatId}`)
-      );
+      pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
       pusherClient.unbind("incoming-message", messageHandler);
     };
   }, [chatId]);
