@@ -25,7 +25,7 @@ const DashboardPage: FC<DashboardPageProps> = async ({}) => {
         -1,
         -1
       )) as string[];
-      const parsedLastMessage = JSON.parse(lastMessage)as Message;
+      const parsedLastMessage = lastMessage?( JSON.parse(lastMessage)as Message) :undefined;
       return {
         ...friend,
         lastMessage:parsedLastMessage,
@@ -69,9 +69,9 @@ const DashboardPage: FC<DashboardPageProps> = async ({}) => {
                 <h4 className="text-lg font-semibold">{friend.name}</h4>
                 <p className="mt-1 max-w--md">
                   <span className="text-zinc-400">
-                    {friend.lastMessage.senderId ?'You: ':""}
+                    {friend.lastMessage &&friend.lastMessage.senderId ===session.user.id ?'You: ':friend.name}
                   </span>
-                  {friend.lastMessage.text}
+                  {friend.lastMessage &&friend.lastMessage.text}
                 </p>
               </div>
             </Link>
