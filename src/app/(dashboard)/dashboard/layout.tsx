@@ -1,5 +1,5 @@
 import FriendRequestSidebarOption from "@/components/FriendRequestSidebarOption";
-import { Icon, Icons } from "@/components/Icons";
+import { Icons } from "@/components/Icons";
 import MobileChatLayout from "@/components/MobileChatLayout";
 import SidebarChatList from "@/components/SidebarChatList";
 import SignOutButton from "@/components/SignOutButton";
@@ -7,7 +7,6 @@ import { getFriendsByUserId } from "@/helpers/get-friends-by-user-id";
 import { fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { SidebarOption } from "@/types/typing";
-import { User } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,7 +63,7 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
           </div>
         )}
         <nav className="flex flex-1 flex-col">
-          <ul role="list" className="flex flex-1 flex-col gap-y-7">
+          <ul role="list" className="relative flex flex-1 flex-col gap-y-7">
             <li>
               <SidebarChatList sessionId={session.user.id} friends={friends} />
             </li>
@@ -91,7 +90,7 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
               </ul>
             </li>
 
-            <li className="-mx-6 mt-auto flex items-center">
+            <li className="overflow-clip -mx-6 mt-auto w-full flex items-center relative">
               <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
                 <div className="relative h-8 w-8 bg-gray-50">
                   <Image
@@ -104,16 +103,18 @@ const Layout: FC<LayoutProps> = async ({ children }) => {
                 </div>
                 <span className="sr-only">Your profile</span>
                 <div className="flex flex-col shrink grow-0">
-                  <span aria-hidden="true">{session.user.name}</span>
+                  <div className="w-full flex gap-4 flex-nowrap items-center">
+                    <span aria-hidden="true">{session.user.name}</span>
+                    <SignOutButton className="h-full aspect-square " />
+                  </div>
                   <span
-                    className="text-xs  shrink truncate text-zinc-400"
+                    className="text-xs max-w-xs  shrink truncate text-zinc-400 pr-3"
                     aria-hidden="true"
                   >
                     {session.user.email}
                   </span>
                 </div>
               </div>
-              <SignOutButton className="h-full aspect-square" />
             </li>
           </ul>
         </nav>

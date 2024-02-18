@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import { app } from "@/lib/firebase";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FC, useState } from "react";
 import toast from "react-hot-toast";
@@ -46,8 +47,16 @@ const LoginPage: FC = () => {
     <>
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full flex flex-col max-w-md space-y-8">
-          <div className="flex flex-col items-center gap-8 ">
-            logo
+          <div className=" flex flex-col items-center gap-8 ">
+            <div className="relative w-28 h-28 my-12">
+              <Image
+                fill
+                alt=""
+                src={"/logo.jpg"}
+                className=" rounded-full "
+              />
+            </div>
+
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
               Sign in to your account
             </h2>
